@@ -69,7 +69,7 @@ export function getContactDisplayValue(item) {
 /** The contact form uses the Django backend so messages can trigger SMS alerts. */
 export function getFormProvider() {
   const { apiUrl, web3formsAccessKey } = siteConfig.form;
-  if (isConfiguredUrl(apiUrl) && web3formsAccessKey.trim()) return 'api';
+  if ((!apiUrl.trim() || isConfiguredUrl(apiUrl)) && web3formsAccessKey.trim()) return 'api';
   return 'none';
 }
 

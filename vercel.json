@@ -1,0 +1,35 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "services": {
+    "najmul-portfolio-api": {
+      "root": "backend",
+      "framework": "django",
+      "buildCommand": "pip install -r requirements.txt && python manage.py collectstatic --noinput && if [ -n \"$DATABASE_URL\" ]; then python manage.py migrate; fi"
+    },
+    "najmul-portfolio-web": {
+      "root": "frontend",
+      "framework": "nextjs",
+      "buildCommand": "npm ci && npm run build"
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": {
+        "service": "najmul-portfolio-api"
+      }
+    },
+    {
+      "source": "/admin/(.*)",
+      "destination": {
+        "service": "najmul-portfolio-api"
+      }
+    },
+    {
+      "source": "/(.*)",
+      "destination": {
+        "service": "najmul-portfolio-web"
+      }
+    }
+  ]
+}

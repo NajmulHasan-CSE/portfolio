@@ -6,7 +6,7 @@ project-root najmul.env file), so no secrets live in the source code.
 """
 import os
 from pathlib import Path
-from urllib.parse import unquote, urlparse
+from urllib.parse import parse_qs, unquote, urlparse
 
 from dotenv import load_dotenv
 
@@ -98,6 +98,9 @@ if database_url:
             'PASSWORD': unquote(parsed_database_url.password or ''),
             'HOST': parsed_database_url.hostname or 'localhost',
             'PORT': str(parsed_database_url.port or 5432),
+            'OPTIONS': {
+                'sslmode': parse_qs(parsed_database_url.query).get('sslmode', ['require'])[-1],
+            },
         }
     }
 elif os.environ.get('DB_NAME'):

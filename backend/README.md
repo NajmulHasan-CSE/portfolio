@@ -89,21 +89,30 @@ SQLite needs no setup for local development. To use PostgreSQL, set `DATABASE_UR
 connection URL, or set `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `DB_HOST`, and `DB_PORT` in `najmul.env`,
 then run `python manage.py migrate` again. The PostgreSQL driver is included in `requirements.txt`.
 
-## Deploy (Render Blueprint)
+## Deploy (Vercel)
 
-The root `render.yaml` deploys the frontend, backend and PostgreSQL database together.
+The root `vercel.json` deploys this Django API as a Python service alongside the Next.js frontend.
+Vercel detects `manage.py`, `config.wsgi.application`, and collects static files.
 
-1. Push the project to GitHub.
-2. Sign in at https://dashboard.render.com with GitHub, choose **New > Blueprint**, and select the
-   repository.
-3. Enter `NEXT_PUBLIC_WEB3FORMS_ACCESS_KEY` when prompted, then deploy the Blueprint.
-4. Render provisions PostgreSQL, applies migrations, and configures the frontend/API URLs.
-5. Verify `/api/health/`, then submit a test contact form and check the verified inbox.
+1. Import the repository as a Vercel project with the repository root as its Root Directory.
+2. Add `DJANGO_SECRET_KEY`, `DJANGO_DEBUG=False`, and `DJANGO_ALLOWED_HOSTS` for the public
+   Vercel hostname. Set `DATABASE_URL` to a persistent PostgreSQL connection string.
+3. The API service runs database migrations during deployments when `DATABASE_URL` is configured.
+   The database URL must use SSL; URLs without an explicit `sslmode` default to `require`.
+4. The frontend and API share a domain; browser requests to `/api/` are routed to Django. CORS is
+   not needed for those same-origin requests.
+5. Add `NEXT_PUBLIC_WEB3FORMS_ACCESS_KEY` in the Vercel project's environment settings.
+   Do not commit API keys or database credentials.
+6. Verify `/api/health/`, submit a test contact form, and confirm the notification arrives in the
+   Web3Forms-verified inbox.
 
-The Blueprint uses free resources by default. Free web services may sleep while idle, and the free
-PostgreSQL database expires after 30 days. Upgrade the database plan for long-term message storage.
-To access Django admin, create a superuser using the API service's shell:
+Vercel's filesystem is ephemeral; SQLite is not suitable for this deployment. Connect a persistent
+PostgreSQL provider before relying on saved contact messages. To access Django admin, create a
+superuser from a local environment configured with the production database. `/admin/` is routed to
+the Django service:
 `python manage.py createsuperuser`.
+
+The root `render.yaml` remains available for deploying the complete site to Render instead.
 
 Railway, Fly.io and similar hosts work the same way: root directory `backend`, the same build/start
 commands and variables.
