@@ -146,11 +146,10 @@ address.
 5. Messages are saved in the database and visible in Django admin at `/admin/`. SMS alerts contain
    the submitter's name, email, subject and message.
 
-When you deploy, the backend is hosted separately from Vercel (see `backend/README.md`), then you set
-`NEXT_PUBLIC_API_URL` to its public https address in Vercel.
-
-Set the Web3Forms access key in Vercel's **Project Settings > Environment Variables** alongside
-`NEXT_PUBLIC_API_URL`, then redeploy. Set any required Twilio variables in the backend host's environment.
+For production, the root `render.yaml` deploys the frontend, API and database together through
+Render. Enter `NEXT_PUBLIC_WEB3FORMS_ACCESS_KEY` when Render prompts for the frontend's environment.
+For Vercel hosting, deploy the Django backend separately and set both `NEXT_PUBLIC_API_URL` and
+`NEXT_PUBLIC_WEB3FORMS_ACCESS_KEY` in Vercel's **Project Settings > Environment Variables**.
 
 ## 7. SEO
 
@@ -180,16 +179,25 @@ git commit -m "Describe your change"
 git push
 ```
 
-## 9. Deploy to Vercel
+## 9. Deploy the complete website to Render
 
-1. Sign in at https://vercel.com with your GitHub account.
-2. **Add New > Project**, pick your repository, and click **Import**.
-3. Set Vercel's **Root Directory** to `frontend`. Use Build command `npm run build` and leave the Output Directory at its Next.js default.
-4. If you use the contact form, add your `NEXT_PUBLIC_...` variables under **Environment Variables**
-   (for the Django backend: `NEXT_PUBLIC_API_URL=https://your-api-host`; deploy it first, see `backend/README.md`).
-   Existing `VITE_...` names in the local `najmul.env` are accepted for compatibility. Vercel hosts only the Next.js site, not the backend.
-5. Click **Deploy**. Every `git push` to `main` redeploys automatically.
+The root `render.yaml` deploys the Next.js frontend, Django contact API and PostgreSQL database
+through one Render Blueprint:
+
+1. Sign in at https://dashboard.render.com with GitHub and authorize the `NajmulHasan-CSE/portfolio`
+   repository if prompted.
+2. Choose **New > Blueprint**, select the repository and deploy the detected `render.yaml`.
+3. When prompted, enter `NEXT_PUBLIC_WEB3FORMS_ACCESS_KEY` for the verified inbox that should
+   receive contact form submissions.
+4. Render builds the services, creates the database, runs migrations and connects the frontend
+   to the API. Check the API's `/api/health/` endpoint and submit a test message.
+5. Free web services may sleep while idle, and Render's free PostgreSQL database expires after
+   30 days. Upgrade the database plan for long-term storage; email notifications are delivered
+   separately through Web3Forms.
 6. Copy the live URL into `frontend/src/data/projects.js` (portfolio card `liveUrl`) and into the SEO tags above.
+
+You can alternatively deploy only the frontend on Vercel by importing the repository and choosing
+`frontend` as the Root Directory. The Django API and database still need a separate host.
 
 ## 10. Testing checklist
 

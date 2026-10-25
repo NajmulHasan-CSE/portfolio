@@ -8,13 +8,16 @@ const localEnvironment = existsSync(environmentPath)
   : {};
 
 function publicEnvironmentValue(nextKey, viteKey) {
-  return (
+  const value =
     process.env[nextKey] ??
     process.env[viteKey] ??
     localEnvironment[nextKey] ??
     localEnvironment[viteKey] ??
-    ''
-  );
+    '';
+  if (nextKey === 'NEXT_PUBLIC_API_URL' && value && !/^https?:\/\//i.test(value)) {
+    return `https://${value}`;
+  }
+  return value;
 }
 
 const publicEnvironment = {

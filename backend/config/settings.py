@@ -6,6 +6,7 @@ project-root najmul.env file), so no secrets live in the source code.
 """
 import os
 from pathlib import Path
+from urllib.parse import unquote, urlparse
 
 from dotenv import load_dotenv
 
@@ -81,10 +82,25 @@ WSGI_APPLICATION = 'config.wsgi.application'
 ASGI_APPLICATION = 'config.asgi.application'
 
 # --- Database ---------------------------------------------------------------
-# SQLite by default (zero setup). Set DB_NAME (and the other DB_* values) to use
-# PostgreSQL instead; this also needs `pip install "psycopg[binary]"`.
+# SQLite by default. Hosted deployments can provide DATABASE_URL or the DB_* values
+# to use PostgreSQL.
 
-if os.environ.get('DB_NAME'):
+database_url = os.environ.get('DATABASE_URL', '').strip()
+if database_url:
+    parsed_database_url = urlparse(database_url)
+    if parsed_database_url.scheme not in ('postgres', 'postgresql'):
+        raise RuntimeError('DATABASE_URL must use the postgres:// or postgresql:// scheme.')
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': unquote(parsed_database_url.path.lstrip('/')),
+            'USER': unquote(parsed_database_url.username or ''),
+            'PASSWORD': unquote(parsed_database_url.password or ''),
+            'HOST': parsed_database_url.hostname or 'localhost',
+            'PORT': str(parsed_database_url.port or 5432),
+        }
+    }
+elif os.environ.get('DB_NAME'):
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
@@ -127,7 +143,10 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # --- CORS: which websites may call this API from a browser --------------------
 # Put your frontend address(es) here, e.g. http://localhost:5173 and your Vercel URL.
 
-CORS_ALLOWED_ORIGINS = env_list('CORS_ALLOWED_ORIGINS', 'http://localhost:5173')
+CORS_ALLOWED_ORIGINS = [
+    origin if '://' in origin else f'https://{origin}'
+    for origin in env_list('CORS_ALLOWED_ORIGINS', 'http://localhost:5173')
+]
 
 # --- Django REST framework ----------------------------------------------------
 

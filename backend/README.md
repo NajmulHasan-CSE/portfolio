@@ -85,31 +85,25 @@ notifications to be sent.
 
 ## Use PostgreSQL instead of SQLite (optional)
 
-SQLite needs no setup and is fine for a portfolio. To use PostgreSQL, run
-`pip install "psycopg[binary]"`, then set `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `DB_HOST`, `DB_PORT` in
-`najmul.env`, and run `python manage.py migrate` again.
+SQLite needs no setup for local development. To use PostgreSQL, set `DATABASE_URL` to a PostgreSQL
+connection URL, or set `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `DB_HOST`, and `DB_PORT` in `najmul.env`,
+then run `python manage.py migrate` again. The PostgreSQL driver is included in `requirements.txt`.
 
-## Deploy (example: Render)
+## Deploy (Render Blueprint)
 
-The backend deploys separately from the frontend (Vercel only hosts the React site).
+The root `render.yaml` deploys the frontend, backend and PostgreSQL database together.
 
-1. Push the whole project to GitHub (the `backend` folder included).
-2. On https://render.com create a **Web Service** from the repository and set **Root Directory** to `backend`.
-3. Build command: `pip install -r requirements.txt && python manage.py collectstatic --noinput && python manage.py migrate`
-4. Start command: `gunicorn config.wsgi`
-5. Environment variables:
-   - `DJANGO_DEBUG=False`
-   - `DJANGO_SECRET_KEY=` a long random string (generate one locally)
-   - `DJANGO_ALLOWED_HOSTS=your-api.onrender.com`
-   - `CORS_ALLOWED_ORIGINS=https://your-site.vercel.app`
-   - `CSRF_TRUSTED_ORIGINS=https://your-api.onrender.com`
-   - `NUM_PROXIES=1`
-6. Important: SQLite files are wiped on redeploy on most free hosts. For a deployed site, create a
-   PostgreSQL database on the host and set the `DB_*` variables (and add `psycopg[binary]` to
-   `requirements.txt`), or your saved messages will disappear.
-7. Create your admin user once with the host's shell: `python manage.py createsuperuser`.
-8. In Vercel, add `NEXT_PUBLIC_API_URL=https://your-api.onrender.com` under **Environment Variables** and redeploy
-   the frontend.
+1. Push the project to GitHub.
+2. Sign in at https://dashboard.render.com with GitHub, choose **New > Blueprint**, and select the
+   repository.
+3. Enter `NEXT_PUBLIC_WEB3FORMS_ACCESS_KEY` when prompted, then deploy the Blueprint.
+4. Render provisions PostgreSQL, applies migrations, and configures the frontend/API URLs.
+5. Verify `/api/health/`, then submit a test contact form and check the verified inbox.
+
+The Blueprint uses free resources by default. Free web services may sleep while idle, and the free
+PostgreSQL database expires after 30 days. Upgrade the database plan for long-term message storage.
+To access Django admin, create a superuser using the API service's shell:
+`python manage.py createsuperuser`.
 
 Railway, Fly.io and similar hosts work the same way: root directory `backend`, the same build/start
 commands and variables.
