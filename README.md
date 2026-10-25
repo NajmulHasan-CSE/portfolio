@@ -190,8 +190,7 @@ Functions do not provide a persistent local filesystem.
 2. Connect a persistent PostgreSQL database to the Vercel project and set `DATABASE_URL`.
    The API service applies migrations on deployment when this variable is present.
 3. Configure the project's `DJANGO_SECRET_KEY`, `DJANGO_DEBUG=False`,
-   `DJANGO_ALLOWED_HOSTS`, `CORS_ALLOWED_ORIGINS` (the frontend's exact production origin), and
-   `NUM_PROXIES=1`.
+   `DJANGO_ALLOWED_HOSTS` (the Vercel production hostname), and `NUM_PROXIES=1`.
 4. Set `NEXT_PUBLIC_WEB3FORMS_ACCESS_KEY` in the project's Vercel environment settings. The frontend
    calls `/api/contact/` on the same domain; set `NEXT_PUBLIC_API_URL` only if you use a separate API
    host. Add secret values directly in Vercel; never commit or share them in chat.
