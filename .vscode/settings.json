@@ -1,0 +1,11 @@
+{
+  "files.exclude": {
+    "**/.env*": true,
+    "**/.venv": true,
+    "**/__pycache__": true,
+    "**/db.sqlite3": true,
+    "**/dist": true,
+    "**/.next": true,
+    "**/node_modules": true
+  }
+}
